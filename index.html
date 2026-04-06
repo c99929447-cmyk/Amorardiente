@@ -199,7 +199,7 @@ section{position:relative;z-index:2}
 <canvas id="stars"></canvas>
 <div class="pet" id="pet"></div>
 <button class="mb" id="mub" title="Música ambiental"><div class="mbs" id="mubs"><div class="bx" style="height:3px"></div><div class="bx" style="height:3px"></div><div class="bx" style="height:3px"></div><div class="bx" style="height:3px"></div></div></button>
-
+<audio id="bgm" loop><source src="musica.mp3" type="audio/mpeg"></audio>
 <section class="hero">
   <div class="hc">
     <div class="horn"></div>
@@ -339,21 +339,42 @@ h.addEventListener('click',e=>{c++;h.style.transform='scale(.85)';setTimeout(()=
 for(let i=0;i<6;i++){const m=document.createElement('div');m.classList.add('mh');m.textContent=['❤','💕','💗','💖','🤍','💘'][Math.floor(Math.random()*6)];const rect=h.getBoundingClientRect();m.style.left=(rect.left+rect.width/2-10+Math.random()*50-25)+'px';m.style.top=(rect.top-10)+'px';m.style.animationDuration=(.7+Math.random()*.7)+'s';document.body.appendChild(m);setTimeout(()=>m.remove(),1300)}
 cnt.textContent=c===1?'1 latido por ti':`${c} latidos por ti`;msg.textContent=ms[Math.min(c,ms.length-1)];msg.style.opacity='1'})})();
 
-// MUSIC
-(function(){const btn=document.getElementById('mub'),bars=document.getElementById('mubs');let ac=null,pl=false,mu=null;
-function cr(){ac=new(AudioContext||webkitAudioContext)();const ma=ac.createGain();ma.gain.value=0.11;ma.connect(ac.destination);
-const rv=ac.createConvolver(),rl=ac.sampleRate*3.5,rb=ac.createBuffer(2,rl,ac.sampleRate);for(let ch=0;ch<2;ch++){const d=rb.getChannelData(ch);for(let i=0;i<rl;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/rl,2.8)}rv.buffer=rb;const rg=ac.createGain();rg.gain.value=0.35;rv.connect(rg);rg.connect(ma);
-const ch=[[261.63,329.63,392,493.88],[220,261.63,329.63,392],[174.61,220,261.63,329.63],[196,246.94,293.66,349.23]];const pd=[];let ci=0;
-function mp(f,dt){const o=ac.createOscillator(),g=ac.createGain(),fl=ac.createBiquadFilter();o.type='sine';o.frequency.value=f;o.detune.value=dt;fl.type='lowpass';fl.frequency.value=650;fl.Q.value=.7;g.gain.value=0.22;o.connect(fl);fl.connect(g);g.connect(ma);g.connect(rv);o.start();return{o,g,fl}}
-ch[0].forEach((f,i)=>pd.push(mp(f,i*5)));
-const sb=ac.createOscillator(),sg=ac.createGain();sb.type='sine';sb.frequency.value=65;sg.gain.value=0.06;sb.connect(sg);sg.connect(ma);sb.start();
-const sh=ac.createOscillator(),shg=ac.createGain(),shf=ac.createBiquadFilter();sh.type='triangle';sh.frequency.value=523;shg.gain.value=0.025;shf.type='lowpass';shf.frequency.value=450;sh.connect(shf);shf.connect(shg);shg.connect(ma);shg.connect(rv);sh.start();
-const lf=ac.createOscillator(),lfg=ac.createGain();lf.frequency.value=0.12;lfg.gain.value=12;lf.connect(lfg);lfg.connect(sh.frequency);lf.start();
-function bell(){if(!pl)return;const ns=[523.25,659.25,783.99,1046.5,587.33,698.46];const f=ns[Math.floor(Math.random()*ns.length)];const o=ac.createOscillator(),g=ac.createGain();o.type='sine';o.frequency.value=f;g.gain.setValueAtTime(0.035,ac.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ac.currentTime+3.5);o.connect(g);g.connect(ma);g.connect(rv);o.start();o.stop(ac.currentTime+3.5);setTimeout(bell,2500+Math.random()*5000)}
-setTimeout(bell,1500);
-const iv=setInterval(()=>{ci=(ci+1)%ch.length;const t=ac.currentTime;pd.forEach((p,i)=>p.o.frequency.linearRampToValueAtTime(ch[ci][i],t+4.5));sb.frequency.linearRampToValueAtTime([65,55,44,49][ci],t+4.5)},7500);
-return{stop:()=>{clearInterval(iv);ma.gain.linearRampToValueAtTime(0,ac.currentTime+1.5);setTimeout(()=>{pd.forEach(p=>p.o.stop());sb.stop();sh.stop();lf.stop()},1600)}}}
-btn.addEventListener('click',()=>{if(!pl){mu=cr();bars.classList.add('on');pl=true}else{if(mu)mu.stop();bars.classList.remove('on');pl=false}})})();
+// MUSIC - MP3 Loop
+(function(){
+  const btn = document.getElementById('mub'),
+        bars = document.getElementById('mubs'),
+        audio = document.getElementById('bgm');
+  let isPlaying = false;
+  
+  function tryPlay() {
+    audio.volume = 0.4;
+    audio.play().then(() => {
+      bars.classList.add('on');
+      isPlaying = true;
+    }).catch(() => {});
+  }
+  
+  window.addEventListener('load', () => {
+    setTimeout(tryPlay, 2500);
+  });
+  
+  document.addEventListener('click', function initAudio() {
+    if (!isPlaying) tryPlay();
+    document.removeEventListener('click', initAudio);
+  }, { once: true });
+  
+  btn.addEventListener('click', () => {
+    if (isPlaying) {
+      audio.pause();
+      bars.classList.remove('on');
+      isPlaying = false;
+    } else {
+      audio.play();
+      bars.classList.add('on');
+      isPlaying = true;
+    }
+  });
+})();
 </script>
 </body>
 </html>
